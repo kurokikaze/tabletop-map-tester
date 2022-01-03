@@ -1,0 +1,10 @@
+.fullMap {
+    display: flex;
+    flex-direction: row;
+    width: 600px;
+}
+
+.fullMap .mapRow {
+    display: flex;
+    flex-direction: column;
+}

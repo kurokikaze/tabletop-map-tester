@@ -1,0 +1,172 @@
+.cell {
+    display: block;
+    position: relative;
+    width: 200px;
+    height: 200px;
+    background-color: #ccc;
+
+    /* Top */
+    .top-left-edge {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 105px;
+        height: 10px;
+    }
+
+    .top-center-edge {
+        position: absolute;
+        left: 95px;
+        top: 0px;
+        width: 10px;
+        height: 105px;
+    }
+
+    .top-right-edge {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        width: 105px;
+        height: 10px;
+    }
+
+    /* Right */
+    .right-left-edge {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        width: 10px;
+        height: 105px;
+    }
+
+    .right-center-edge {
+        position: absolute;
+        left: 95px;
+        top: 95px;
+        width: 105px;
+        height: 10px;
+    }
+
+    .right-right-edge {
+        position: absolute;
+        right: 0px;
+        top: 95px;
+        width: 10px;
+        height: 105px;
+    }
+
+    /* Bottom */
+    .bottom-left-edge {
+        position: absolute;
+        right: 0px;
+        bottom: 0px;
+        width: 105px;
+        height: 10px;
+    }
+
+    .bottom-center-edge {
+        position: absolute;
+        left: 95px;
+        bottom: 0px;
+        width: 10px;
+        height: 105px;
+    }
+
+    .bottom-right-edge {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        width: 105px;
+        height: 10px;
+    }
+
+    /* Left */
+    .left-left-edge {
+        position: absolute;
+        left: 0px;
+        top: 95px;
+        width: 10px;
+        height: 105px;
+    }
+
+    .left-center-edge {
+        position: absolute;
+        left: 0px;
+        top: 95px;
+        width: 105px;
+        height: 10px;
+    }
+
+    .left-right-edge {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 10px;
+        height: 105px;
+    }
+}
+
+.cell .wall, .cell .door, .cell .doorway {
+    background-color: #555;
+}
+
+.cell .door::after, .cell .doorway::after {
+    content: '';
+    display: block;
+    position: relative;
+    background-color: #ccc;
+}
+
+.cell .coords {
+    display: none;
+    position: absolute;
+    width: 40px;
+}
+
+.cell:hover .coords {
+    display: block;
+}
+
+.coords.coords-ul {
+    top: 30px;
+    left: 30px;
+}
+
+.coords.coords-ur {
+    top: 30px;
+    left: 130px;
+}
+
+.coords.coords-dl {
+    top: 130px;
+    left: 30px;
+}
+
+.coords.coords-dr {
+    top: 130px;
+    left: 130px;
+}
+
+.right-center-edge.door::after, .left-center-edge.door::after, .top-left-edge.door::after, .top-right-edge.door::after, .bottom-left-edge.door::after, .bottom-right-edge.door::after {
+    left: 33px;
+    width: 33px;
+    height: 10px;
+}
+
+.top-center-edge.door::after, .bottom-center-edge.door::after, .right-left-edge.door::after, .right-right-edge.door::after, .left-left-edge.door::after, .left-right-edge.door::after {
+    top: 33px;
+    height: 33px;
+    width: 10px;
+}
+
+.right-center-edge.doorway::after, .left-center-edge.doorway::after, .top-left-edge.doorway::after, .top-right-edge.doorway::after, .bottom-left-edge.doorway::after, .bottom-right-edge.doorway::after {
+    left: 33px;
+    width: 33px;
+    height: 10px;
+}
+
+.top-center-edge.doorway::after, .bottom-center-edge.doorway::after, .right-left-edge.doorway::after, .right-right-edge.doorway::after, .left-left-edge.doorway::after, .left-right-edge.doorway::after {
+    top: 33px;
+    height: 33px;
+    width: 10px;
+}
