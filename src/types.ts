@@ -9,6 +9,7 @@ export const TOP_LEFT = 'top_left'
 export const TOP_RIGHT = 'top_right'
 export const BOTTOM_LEFT = 'bottom_left'
 export const BOTTOM_RIGHT = 'bottom_right'
+export const MIDDLE = 'middle_room'
 
 export type Direction = 'top' | 'left' | 'bottom' | 'right'
 
@@ -23,7 +24,7 @@ export type ErrorReasonType = typeof END_UNREACHABLE | typeof END_BLOCKED | type
 export type Candidate = {
   cellX: number
   cellY: number
-  subCell: typeof TOP_LEFT | typeof TOP_RIGHT | typeof BOTTOM_LEFT | typeof BOTTOM_RIGHT
+  subCell: typeof TOP_LEFT | typeof TOP_RIGHT | typeof BOTTOM_LEFT | typeof BOTTOM_RIGHT | typeof MIDDLE
   // node: Room
   direction: Direction
 }
@@ -34,9 +35,18 @@ export type CellSide = {
     r: Edge
 }
 
+export type MiddleRoom = {
+  tl: Edge
+  tr: Edge
+  br: Edge
+  bl: Edge
+}
+
 export type Cell = [CellSide, CellSide, CellSide, CellSide]
 
-export type GameMap = (Cell|false)[][]
+export type ExtendedCell = [CellSide, CellSide, CellSide, CellSide, MiddleRoom]
+
+export type GameMap = (Cell|ExtendedCell|false)[][]
 
 export type PointType = {
   x: number
@@ -58,4 +68,11 @@ export type GraphErrorType = {
   pointX: number
   pointY: number
   reason: ErrorReasonType
+}
+
+export type SavedTileSet = {
+  name: string
+  startingTile: Cell|ExtendedCell
+  endingTile: Cell|ExtendedCell
+  tiles: (Cell|ExtendedCell)[]
 }

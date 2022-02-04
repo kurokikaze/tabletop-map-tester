@@ -11,11 +11,15 @@ import EditIcon from '@mui/icons-material/Edit'
 import LinearProgress from './LinearProgress'
 import FullMap from './FullMap'
 import MapCell from './MapCell'
+import MapExtendedCell from './MapExtendedCell'
 import TileEditModal from './TileEditModal/TileEditModal'
 import ErrorList from './ErrorList/ErrorList'
 import { buildGraph, fitCellAt, getMapHash } from './astar' 
-import HistoryPlayer from './HistoryPlayer/HistoryPlayer';
-import { Candidate, Cell, Direction, GameMap, GraphErrorType, HistoryEntry, PointType, TOP_LEFT, END_BLOCKED, END_UNREACHABLE, CANNOT_FIT, ErrorReasonType, GENERIC_ERROR, UNUSED_TILES } from './types';
+import HistoryPlayer from './HistoryPlayer/HistoryPlayer'
+import { Candidate, Cell, Direction, GameMap, GraphErrorType, HistoryEntry, PointType, TOP_LEFT, END_BLOCKED, END_UNREACHABLE, CANNOT_FIT, ErrorReasonType, GENERIC_ERROR, UNUSED_TILES, ExtendedCell, SavedTileSet } from './types';
+import SaveLoadModal from './SaveLoadModal/SaveLoadModal'
+
+const LOCAL_STORAGE_KEY = 'savedSets'
 
 const testMap: GameMap = [
   [
@@ -89,12 +93,19 @@ function App() {
   const [cellX, setCellX] = useState<number>()
   const [cellY, setCellY] = useState<number>()
   const [map, setMap] = useState<GameMap>([...testMap])
-  const [tiles, setTiles] = useState([...initialTiles])
-  const [currentTiles, setCurrentTiles] = useState([...initialTiles])
+  const [tiles, setTiles] = useState<(Cell|ExtendedCell)[]>([...initialTiles])
+  const [currentTiles, setCurrentTiles] = useState<(Cell|ExtendedCell)[]>([...initialTiles])
   const [selectedPiece, setSelectedPiece] = useState<number>(0)
 
+  const setsInStorage = localStorage ? localStorage.getItem(LOCAL_STORAGE_KEY) : false
+    
+  const initialSavedSets = setsInStorage ? JSON.parse(setsInStorage) : []
+
+  const [savedSets, setSavedSets] = useState<SavedTileSet[]>(initialSavedSets)
+  const [saveLoadOpen, setSaveLoadOpen] = useState<boolean>(false)
+
   const [editedTileIndex, setEditedTileIndex] = useState<number>()
-  const [editedTile, setEditedTile] = useState<Cell>()
+  const [editedTile, setEditedTile] = useState<Cell | ExtendedCell>()
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<GraphErrorType[]>([])
@@ -102,8 +113,8 @@ function App() {
   const [historyLoaded, setHistoryLoaded] = useState<boolean>(false)
   const [selectedError, setSelectedError] = useState<number>()
 
-  const [alternateStartingTile, setAlternateStartingTile] = useState<Cell|false>(false)
-  const [alternateEndingTile, setAlternateEndingTile] = useState<Cell|false>(false)
+  const [alternateStartingTile, setAlternateStartingTile] = useState<Cell|ExtendedCell|false>(false)
+  const [alternateEndingTile, setAlternateEndingTile] = useState<Cell|ExtendedCell|false>(false)
 
   const [runsDone, setRunsDone] = useState(0)
   const [expectedRuns, setExpectedRuns] = useState(1)
@@ -182,7 +193,7 @@ function App() {
 
   type WorkEntry = {
       map: GameMap
-      tiles: Cell[]
+      tiles: (Cell| ExtendedCell)[]
       visitedSet: string[]
       openCells: PointType[]
       initialQueue: {
@@ -408,12 +419,35 @@ function App() {
   const handleCellReset = useCallback(() => {
     setTiles([...initialTiles])
     handleReset()
+    setCurrentTiles([...initialTiles])
   }, [handleReset])
 
   const loadHistoryIntoPlayer = useCallback((index: number) => {
     setHistoryLoaded(true)
     setSelectedError(index)
   }, [])
+
+  const handleOpenSaveLoadModal = useCallback(() => setSaveLoadOpen(true), [])
+
+  const handleSaveSet = useCallback((newSavedSet, index) => {
+    const newSavedSets = [...savedSets]
+    newSavedSets[index] = newSavedSet
+    setSavedSets(newSavedSets)
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSavedSets));
+  }, [savedSets])
+
+  const handleLoadSet = useCallback((index) => {
+    if (index in savedSets) {
+      const loadedSet = savedSets[index]
+      setTiles([...loadedSet.tiles])
+      handleReset()
+      setCurrentTiles([...loadedSet.tiles])
+
+      setAlternateStartingTile(loadedSet.startingTile)
+      setAlternateEndingTile(loadedSet.endingTile)
+    }
+    setSaveLoadOpen(false)
+  }, [savedSets, handleReset])
 
   return (
     <div className="App">
@@ -462,6 +496,14 @@ function App() {
         <Button disabled={alternateStartingTile === false} variant="contained" onClick={handleResetStartTile}>Вернуть начальный тайл</Button>
         <Button disabled={alternateEndingTile === false} variant="contained" onClick={handleResetEndTile}>Вернуть конечный тайл</Button>
       </Container>
+      <Container sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        maxWidth: 1100,
+        marginBottom: 2,
+      }}>
+        <Button variant="contained" onClick={handleOpenSaveLoadModal}>Сохранить/Загрузить наборы тайлов</Button>
+      </Container>
       {runsDone > 0 ? <div style={{ marginBottom: 50 }}>
         {expectedRuns > 0 && <LinearProgress value={100 * (runsDone / expectedRuns)}/>}
         <div><h4>Комбинаций проверено:</h4> {runsDone}</div>
@@ -475,7 +517,7 @@ function App() {
           style={{ padding: 5 }}
           onClick={() => setSelectedPiece(i)}
         >
-            <MapCell cell={tile} x={0} y={0} />
+            {tile.length === 4 ? <MapCell cell={tile} x={0} y={0} /> : <MapExtendedCell cell={tile} />}
             {currentTiles.length === 7 ? <EditIcon sx={{ color: '#5F6C86', cursor: 'pointer' }} onClick={() => handleEditTile(i)}/> : null}
           </div>
         </Paper>)}
@@ -486,6 +528,18 @@ function App() {
         onSave={handleSave} 
         tile={editedTile || tiles[selectedPiece]}
         onChange={(tile) => setEditedTile(tile)}
+      />
+      <SaveLoadModal
+        savedSets={savedSets}
+        open={saveLoadOpen}
+        onClose={() => setSaveLoadOpen(false)}
+        onLoad={handleLoadSet}
+        onSave={handleSaveSet}
+        currentSet={{
+          tiles,
+          startingTile: alternateStartingTile || startingTile,
+          endingTile: alternateEndingTile || endingTile,
+        }}
       />
     </div>
   );

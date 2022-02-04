@@ -1,10 +1,11 @@
 import { rotateRight } from "./tiles"
-import { BOTTOM_LEFT, BOTTOM_RIGHT, Candidate, Cell, CellSide, Direction, DOOR, DOORWAY, Edge, EMPTY, GameMap, PointType, TOP_LEFT, TOP_RIGHT, WALL } from "./types"
+import { BOTTOM_LEFT, BOTTOM_RIGHT, MIDDLE, Candidate, Cell, CellSide, DOOR, DOORWAY, Edge, EMPTY, ExtendedCell, GameMap, MiddleRoom, PointType, TOP_LEFT, TOP_RIGHT, WALL } from "./types"
 
 const EDGE_TOP = 0
 const EDGE_RIGHT = 1
 const EDGE_BOTTOM = 2
 const EDGE_LEFT = 3
+const MIDDLE_ROOM = 4
 const Q1 = 'q1'
 const Q2 = 'q2'
 const Q3 = 'q3'
@@ -155,21 +156,6 @@ export const nodeConflictsAt = (x1: number, y1: number, x2: number, y2: number, 
   return false
 }
 
-type Room = {
-  id: string
-  top: Room | null
-  left: Room | null
-  bottom: Room | null
-  right: Room | null
-}
-
-const inverse: Record<Direction, Direction> = {
-  top: 'bottom',
-  bottom: 'top',
-  left: 'right',
-  right: 'left',
-}
-
 const Symbols: Record<Edge, string> = {
   [WALL]: 'W',
   [DOORWAY]: 'd',
@@ -178,9 +164,12 @@ const Symbols: Record<Edge, string> = {
 }
 
 const cellToBits = (edge: CellSide) => Symbols[edge.l] + Symbols[edge.c] + Symbols[edge.r]
+const roomToBits = (edge: MiddleRoom) => Symbols[edge.tl] + Symbols[edge.tr] + Symbols[edge.bl] + Symbols[edge.br]
 
-export const getTileHash = (tile: Cell): string =>
-  cellToBits(tile[EDGE_LEFT]) + cellToBits(tile[EDGE_TOP]) + cellToBits(tile[EDGE_RIGHT]) + cellToBits(tile[EDGE_BOTTOM])
+export const getTileHash = (tile: Cell | ExtendedCell): string =>
+  (tile.length === 4)
+  ? cellToBits(tile[EDGE_LEFT]) + cellToBits(tile[EDGE_TOP]) + cellToBits(tile[EDGE_RIGHT]) + cellToBits(tile[EDGE_BOTTOM])
+  : cellToBits(tile[EDGE_LEFT]) + cellToBits(tile[EDGE_TOP]) + cellToBits(tile[EDGE_RIGHT]) + cellToBits(tile[EDGE_BOTTOM]) + roomToBits(tile[MIDDLE_ROOM])
 
 export const getMapHash = (map: GameMap): string => {
   return map.map(col => col.map(cell => cell ? getTileHash(cell) : '?').join('')).join('')
@@ -188,7 +177,6 @@ export const getMapHash = (map: GameMap): string => {
 
 export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQueue: Candidate[]): [PointType[], Candidate[], string[]] => {
   const cellQueue: Candidate[] = []
-  const startingCell = map[0][2]
 
   const visitedSet = new Set<string>()
 
@@ -196,15 +184,8 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
     cellQueue.push(...initialQueue)
     initialVisitedSet.forEach(value => visitedSet.add(value))
   } else {
-    // const startingNode = {
-    //   id: `0:3:${BOTTOM_LEFT}`,
-    //   top: null,
-    //   right: null,
-    //   bottom: null,
-    //   left: null,
-    // }
   
-    if (startingCell && startingCell[EDGE_LEFT].c !== WALL) {
+    /*if (startingCell && startingCell[EDGE_LEFT].c !== WALL) {
       cellQueue.push({
         cellX: 0,
         cellY: 2,
@@ -222,7 +203,14 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
         // node: startingNode,
         direction: 'right'
       })
-    }
+    }*/
+    cellQueue.push({
+      cellX: 0,
+      cellY: 2,
+      subCell: BOTTOM_LEFT,
+      // node: startingNode,
+      direction: 'right'
+    })
   
     visitedSet.add(`0:2:${BOTTOM_LEFT}`)  
   }
@@ -237,7 +225,7 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
   while (cellQueue.length) {
     const candidate = cellQueue.pop()
     if (candidate) {
-      const { cellX, cellY, subCell, /*node,*/ direction } = candidate
+      const { cellX, cellY, subCell } = candidate
       visitedSet.add(`${cellX}:${cellY}:${subCell}`)
 
       // const newNode: Room = {
@@ -339,6 +327,20 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
               })
             }
           }
+          // Going centerwise
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].tl !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${MIDDLE}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: MIDDLE,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
           break;
         }
         case TOP_RIGHT: {
@@ -419,6 +421,20 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
                 cellX,
                 cellY,
                 subCell: BOTTOM_RIGHT,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
+          // Going centerwise
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].tr !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${MIDDLE}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: MIDDLE,
                 // node: newNode,
                 direction: 'bottom',
               })
@@ -509,6 +525,20 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
               })
             }
           }
+          // Going centerwise
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].bl !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${MIDDLE}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: MIDDLE,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
           break;
         }
         case BOTTOM_RIGHT: {
@@ -594,7 +624,80 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
               }
             }
           }
+          // Going centerwise
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].br !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${MIDDLE}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: MIDDLE,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
           break
+        }
+        case MIDDLE: {
+          // Going top-left
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].tl !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${TOP_LEFT}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: TOP_LEFT,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
+          // Going top-right
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].tr !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${TOP_RIGHT}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: TOP_RIGHT,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
+          // Going bottom-left
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].bl !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${BOTTOM_LEFT}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: BOTTOM_LEFT,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
+          // Going bottom-right
+          if (cell && cell.length === 5 && cell[MIDDLE_ROOM].br !== WALL) {
+            if (visitedSet.has(`${cellX}:${cellY}:${BOTTOM_RIGHT}`)) {
+              // visitedRooms[`${cellX}:${cellY}:${BOTTOM_LEFT}`].top = newNode
+            } else {
+              cellQueue.unshift({
+                cellX,
+                cellY,
+                subCell: BOTTOM_RIGHT,
+                // node: newNode,
+                direction: 'bottom',
+              })
+            }
+          }
+          break;
         }
       }
     }
@@ -632,7 +735,7 @@ export const floodFill = (startPoint: PointType, endPoint: PointType, gameMap: G
 
 const doorAdjancedToEdge = (edge: CellSide): boolean => (edge.l === DOOR || edge.r === DOOR || edge.l === DOORWAY || edge.r === DOORWAY)
 
-export const nodeConflictsWithBorders = (cell: Cell, x: number, y: number): boolean => {
+export const nodeConflictsWithBorders = (cell: Cell|ExtendedCell, x: number, y: number): boolean => {
   // Top conflicts
   if (y === 0 && doorAdjancedToEdge(cell[EDGE_TOP])) {
     return true
@@ -659,7 +762,7 @@ export const nodeConflictsWithBorders = (cell: Cell, x: number, y: number): bool
   return false
 }
 
-export const fitCellAt = (cell: Cell, x: number, y: number, map: GameMap): [GameMap, boolean] => {
+export const fitCellAt = (cell: Cell | ExtendedCell, x: number, y: number, map: GameMap): [GameMap, boolean] => {
   if (!map[x][y]) {
     const rotations = [cell, rotateRight(cell), rotateRight(rotateRight(cell)), rotateRight(rotateRight(rotateRight(cell)))]
     for (let rotation of rotations) {
