@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { startingTile, endingTile, tiles as initialTiles, rotateRight } from './tiles'
 import './App.css';
 import Button from '@mui/material/Button'
@@ -116,8 +116,11 @@ function App() {
   const [alternateStartingTile, setAlternateStartingTile] = useState<Cell|ExtendedCell|false>(false)
   const [alternateEndingTile, setAlternateEndingTile] = useState<Cell|ExtendedCell|false>(false)
 
+  const [calculating, setCalculating] = useState<boolean>(false)
   const [runsDone, setRunsDone] = useState(0)
   const [expectedRuns, setExpectedRuns] = useState(1)
+
+  const flags = useRef<{ stop: boolean }>({ stop: false })
 
   const startingMap: GameMap = useMemo(() => {
     const result = [...map.map(row => [...row])]
@@ -207,6 +210,7 @@ function App() {
   }
 
   const calcEveryTiling = useCallback(() => {
+    setCalculating(true)
     const workQueue: WorkEntry[] = []
 
     const usedCombinations = new Set()
@@ -244,10 +248,12 @@ function App() {
         combinations = combinations + 1
   
         if (combinations >= (reportedCombinations + 1000)) {
-          // console.log(`Проверено ${combinations} комбинаций, найдено ${errors.length} ошибочных, очередь: ${workQueue.length}`)
           reportedCombinations = combinations
-          if (workQueue.length) {
+          if (workQueue.length && !flags.current.stop) {
             setTimeout(doTheWork, 200)
+          } else {
+            flags.current.stop = false
+            setCalculating(false)
           }
           setRunsDone(combinations)
           setErrors(errors)
@@ -481,7 +487,7 @@ function App() {
           <Button variant="contained" disabled={cellX === undefined || cellY === undefined} onClick={handleRandomPieceFit}>Вставить случайный тайл</Button>
         </ButtonGroup>
         {/* <Button variant="contained" onClick={handleMapSetup}>Начать процесс</Button> */}
-        <Button variant="contained" onClick={calcEveryTiling}>Проверить все варианты</Button>
+        {calculating ? <Button variant="contained" onClick={() => { flags.current.stop = true }}>Остановить</Button> : <Button variant="contained" onClick={calcEveryTiling}>Проверить все варианты</Button>}
         <Button variant="contained" onClick={handleReset}>Сброс</Button>
         <Button variant="contained" onClick={handleCellReset}>Сброс тайлов</Button>
       </Container>

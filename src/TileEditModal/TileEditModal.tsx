@@ -23,7 +23,6 @@ export default function TileEditModal({ tile, open, onChange, onSave, onClose }:
 
   return (<Modal sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-around' }} open={open} onClose={onClose} onBackdropClick={onClose}>
     <Paper sx={{ width: 600, height: 600, alignSelf: 'center', backgroundColor: '#488DAC', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-      <pre>{tile.length}</pre>
       <Box height={400} sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
         {tile.length === 4 ? <CellEditor cell={tile} x={0} y={0} onChange={onChange} /> : <ExtendedCellEditor cell={tile} x={0} y={0} onChange={onChange} />}
       </Box>
