@@ -1,0 +1,1119 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+body {
+  background-color: #5f6c86;
+}
+
+.App {
+  background-color: #5f6c86;
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #5f6c86;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cell {
+  display: block;
+  position: relative;
+  width: 200px;
+  height: 200px;
+  background-color: #ccc;
+  /* Top */
+  /* Right */
+  /* Bottom */
+  /* Left */
+}
+.cell .top-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 105px;
+  height: 10px;
+}
+.cell .top-center-edge {
+  position: absolute;
+  left: 95px;
+  top: 0px;
+  width: 10px;
+  height: 105px;
+}
+.cell .top-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 105px;
+  height: 10px;
+}
+.cell .right-left-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 10px;
+  height: 105px;
+}
+.cell .right-center-edge {
+  position: absolute;
+  left: 95px;
+  top: 95px;
+  width: 105px;
+  height: 10px;
+}
+.cell .right-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 95px;
+  width: 10px;
+  height: 105px;
+}
+.cell .bottom-left-edge {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 105px;
+  height: 10px;
+}
+.cell .bottom-center-edge {
+  position: absolute;
+  left: 95px;
+  bottom: 0px;
+  width: 10px;
+  height: 105px;
+}
+.cell .bottom-right-edge {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 105px;
+  height: 10px;
+}
+.cell .left-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 95px;
+  width: 10px;
+  height: 105px;
+}
+.cell .left-center-edge {
+  position: absolute;
+  left: 0px;
+  top: 95px;
+  width: 105px;
+  height: 10px;
+}
+.cell .left-right-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 10px;
+  height: 105px;
+}
+.cell .wall,
+.cell .door,
+.cell .doorway {
+  background-color: #555;
+}
+.cell .door::after,
+.cell .doorway::after {
+  content: '';
+  display: block;
+  position: relative;
+  background-color: #ccc;
+}
+.cell .coords {
+  display: none;
+  position: absolute;
+  width: 40px;
+}
+.cell:hover .coords {
+  display: block;
+}
+.coords.coords-ul {
+  top: 30px;
+  left: 30px;
+}
+.coords.coords-ur {
+  top: 30px;
+  left: 130px;
+}
+.coords.coords-dl {
+  top: 130px;
+  left: 30px;
+}
+.coords.coords-dr {
+  top: 130px;
+  left: 130px;
+}
+.right-center-edge.door::after,
+.left-center-edge.door::after,
+.top-left-edge.door::after,
+.top-right-edge.door::after,
+.bottom-left-edge.door::after,
+.bottom-right-edge.door::after {
+  left: 33px;
+  width: 33px;
+  height: 10px;
+}
+.top-center-edge.door::after,
+.bottom-center-edge.door::after,
+.right-left-edge.door::after,
+.right-right-edge.door::after,
+.left-left-edge.door::after,
+.left-right-edge.door::after {
+  top: 33px;
+  height: 33px;
+  width: 10px;
+}
+.right-center-edge.doorway::after,
+.left-center-edge.doorway::after,
+.top-left-edge.doorway::after,
+.top-right-edge.doorway::after,
+.bottom-left-edge.doorway::after,
+.bottom-right-edge.doorway::after {
+  left: 33px;
+  width: 33px;
+  height: 10px;
+}
+.top-center-edge.doorway::after,
+.bottom-center-edge.doorway::after,
+.right-left-edge.doorway::after,
+.right-right-edge.doorway::after,
+.left-left-edge.doorway::after,
+.left-right-edge.doorway::after {
+  top: 33px;
+  height: 33px;
+  width: 10px;
+}
+
+.fullMap {
+    display: flex;
+    flex-direction: row;
+    width: 600px;
+}
+
+.fullMap .mapRow {
+    display: flex;
+    flex-direction: column;
+}
+.extendedCell {
+  display: block;
+  position: relative;
+  width: 200px;
+  height: 200px;
+  background-color: #ccc;
+  /* Top */
+  /* Right */
+  /* Bottom */
+  /* Left */
+  /* Middle Room */
+}
+.extendedCell .top-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 105px;
+  height: 10px;
+}
+.extendedCell .top-center-edge {
+  position: absolute;
+  left: 95px;
+  top: 0px;
+  width: 10px;
+  height: 55px;
+}
+.extendedCell .top-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 105px;
+  height: 10px;
+}
+.extendedCell .right-left-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 10px;
+  height: 105px;
+}
+.extendedCell .right-center-edge {
+  position: absolute;
+  right: 0px;
+  top: 95px;
+  width: 55px;
+  height: 10px;
+}
+.extendedCell .right-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 95px;
+  width: 10px;
+  height: 105px;
+}
+.extendedCell .bottom-left-edge {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 105px;
+  height: 10px;
+}
+.extendedCell .bottom-center-edge {
+  position: absolute;
+  left: 95px;
+  bottom: 0px;
+  width: 10px;
+  height: 55px;
+}
+.extendedCell .bottom-right-edge {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 105px;
+  height: 10px;
+}
+.extendedCell .left-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 95px;
+  width: 10px;
+  height: 105px;
+}
+.extendedCell .left-center-edge {
+  position: absolute;
+  left: 0px;
+  top: 95px;
+  width: 55px;
+  height: 10px;
+}
+.extendedCell .left-right-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 10px;
+  height: 105px;
+}
+.extendedCell .middle-top-left-edge {
+  position: absolute;
+  left: 42px;
+  top: 72px;
+  width: 70px;
+  height: 10px;
+  transform: rotate(135deg);
+}
+.extendedCell .middle-top-right-edge {
+  position: absolute;
+  right: 42px;
+  top: 72px;
+  width: 70px;
+  height: 10px;
+  transform: rotate(45deg);
+}
+.extendedCell .middle-bottom-left-edge {
+  position: absolute;
+  left: 42px;
+  top: 119px;
+  width: 70px;
+  height: 10px;
+  transform: rotate(45deg);
+}
+.extendedCell .middle-bottom-right-edge {
+  position: absolute;
+  right: 41px;
+  top: 119px;
+  width: 70px;
+  height: 10px;
+  transform: rotate(135deg);
+}
+.extendedCell .right-center-edge.door::after,
+.extendedCell .left-center-edge.door::after {
+  left: 20px;
+  width: 17px;
+  height: 10px;
+}
+.extendedCell .top-left-edge.door::after,
+.extendedCell .top-right-edge.door::after,
+.extendedCell .bottom-left-edge.door::after,
+.extendedCell .bottom-right-edge.door::after {
+  left: 33px;
+  width: 33px;
+  height: 10px;
+}
+.extendedCell .top-center-edge.door::after,
+.extendedCell .bottom-center-edge.door::after {
+  top: 20px;
+  height: 17px;
+  width: 10px;
+}
+.extendedCell .right-left-edge.door::after,
+.extendedCell .right-right-edge.door::after,
+.extendedCell .left-left-edge.door::after,
+.extendedCell .left-right-edge.door::after {
+  top: 33px;
+  height: 33px;
+  width: 10px;
+}
+.extendedCell .right-center-edge.doorway::after,
+.extendedCell .left-center-edge.doorway::after {
+  left: 20px;
+  width: 17px;
+  height: 10px;
+}
+.extendedCell .top-left-edge.doorway::after,
+.extendedCell .top-right-edge.doorway::after,
+.extendedCell .bottom-left-edge.doorway::after,
+.extendedCell .bottom-right-edge.doorway::after {
+  left: 33px;
+  width: 33px;
+  height: 10px;
+}
+.extendedCell .top-center-edge.doorway::after,
+.extendedCell .bottom-center-edge.doorway::after {
+  top: 20px;
+  height: 17px;
+  width: 10px;
+}
+.extendedCell .right-left-edge.doorway::after,
+.extendedCell .right-right-edge.doorway::after,
+.extendedCell .left-left-edge.doorway::after,
+.extendedCell .left-right-edge.doorway::after {
+  top: 33px;
+  height: 33px;
+  width: 10px;
+}
+.extendedCell .middle-top-left-edge.doorway::after,
+.extendedCell .middle-top-right-edge.doorway::after,
+.extendedCell .middle-bottom-left-edge.doorway::after,
+.extendedCell .middle-bottom-right-edge.doorway::after,
+.extendedCell .middle-top-left-edge.door::after,
+.extendedCell .middle-top-right-edge.door::after,
+.extendedCell .middle-bottom-left-edge.door::after,
+.extendedCell .middle-bottom-right-edge.door::after {
+  left: 20px;
+  height: 10px;
+  width: 30px;
+}
+.extendedCell .wall,
+.extendedCell .door,
+.extendedCell .doorway {
+  background-color: #555;
+}
+.extendedCell .door::after,
+.extendedCell .doorway::after {
+  content: '';
+  display: block;
+  position: relative;
+  background-color: #ccc;
+}
+.extendedCell .coords {
+  display: none;
+  position: absolute;
+  width: 40px;
+}
+.extendedCell:hover .coords {
+  display: block;
+}
+
+.cellEditor {
+  display: block;
+  position: relative;
+  width: 400px;
+  height: 400px;
+  background-color: #ccc;
+  /* Top */
+  /* Right */
+  /* Bottom */
+  /* Left */
+}
+.cellEditor .top-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 210px;
+  height: 20px;
+}
+.cellEditor .top-center-edge {
+  position: absolute;
+  left: 190px;
+  top: 0px;
+  width: 20px;
+  height: 210px;
+}
+.cellEditor .top-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 210px;
+  height: 20px;
+}
+.cellEditor .right-left-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 20px;
+  height: 210px;
+}
+.cellEditor .right-center-edge {
+  position: absolute;
+  left: 190px;
+  top: 190px;
+  width: 210px;
+  height: 20px;
+}
+.cellEditor .right-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 190px;
+  width: 20px;
+  height: 210px;
+}
+.cellEditor .bottom-left-edge {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 210px;
+  height: 20px;
+}
+.cellEditor .bottom-center-edge {
+  position: absolute;
+  left: 190px;
+  bottom: 0px;
+  width: 20px;
+  height: 210px;
+}
+.cellEditor .bottom-right-edge {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 210px;
+  height: 20px;
+}
+.cellEditor .left-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 190px;
+  width: 20px;
+  height: 210px;
+}
+.cellEditor .left-center-edge {
+  position: absolute;
+  left: 0px;
+  top: 190px;
+  width: 210px;
+  height: 20px;
+}
+.cellEditor .left-right-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 20px;
+  height: 210px;
+}
+.cellEditor .wall {
+  background-color: #555;
+}
+.cellEditor .door,
+.cellEditor .doorway {
+  background-color: #555;
+}
+.cellEditor .empty:hover {
+  background-color: #aaa;
+}
+.cellEditor .wall:hover,
+.cellEditor .door:hover,
+.cellEditor .doorway:hover {
+  background-color: #5F6C86;
+}
+.cellEditor .wall:hover::after,
+.cellEditor .door:hover::after,
+.cellEditor .doorway:hover::after {
+  background-color: #aaa;
+}
+.cellEditor .door::after,
+.cellEditor .doorway::after {
+  content: '';
+  display: block;
+  position: relative;
+  background-color: #ccc;
+}
+.cellEditor .right-center-edge.door::after,
+.cellEditor .left-center-edge.door::after,
+.cellEditor .top-left-edge.door::after,
+.cellEditor .top-right-edge.door::after,
+.cellEditor .bottom-left-edge.door::after,
+.cellEditor .bottom-right-edge.door::after {
+  left: 66px;
+  width: 66px;
+  height: 20px;
+}
+.cellEditor .top-center-edge.door::after,
+.cellEditor .bottom-center-edge.door::after,
+.cellEditor .right-left-edge.door::after,
+.cellEditor .right-right-edge.door::after,
+.cellEditor .left-left-edge.door::after,
+.cellEditor .left-right-edge.door::after {
+  top: 66px;
+  height: 66px;
+  width: 20px;
+}
+.cellEditor .right-center-edge.doorway::after,
+.cellEditor .left-center-edge.doorway::after,
+.cellEditor .top-left-edge.doorway::after,
+.cellEditor .top-right-edge.doorway::after,
+.cellEditor .bottom-left-edge.doorway::after,
+.cellEditor .bottom-right-edge.doorway::after {
+  left: 66px;
+  width: 66px;
+  height: 20px;
+}
+.cellEditor .top-center-edge.doorway::after,
+.cellEditor .bottom-center-edge.doorway::after,
+.cellEditor .right-left-edge.doorway::after,
+.cellEditor .right-right-edge.doorway::after,
+.cellEditor .left-left-edge.doorway::after,
+.cellEditor .left-right-edge.doorway::after {
+  top: 66px;
+  height: 66px;
+  width: 20px;
+}
+
+.extendedCellEditor {
+  display: block;
+  position: relative;
+  width: 400px;
+  height: 400px;
+  background-color: #ccc;
+  /* Top */
+  /* Right */
+  /* Bottom */
+  /* Left */
+  /* Middle Room */
+}
+.extendedCellEditor .top-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 210px;
+  height: 20px;
+}
+.extendedCellEditor .top-center-edge {
+  position: absolute;
+  left: 190px;
+  top: 0px;
+  width: 20px;
+  height: 100px;
+}
+.extendedCellEditor .top-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 210px;
+  height: 20px;
+}
+.extendedCellEditor .right-left-edge {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 20px;
+  height: 210px;
+}
+.extendedCellEditor .right-center-edge {
+  position: absolute;
+  right: 0px;
+  top: 190px;
+  width: 100px;
+  height: 20px;
+}
+.extendedCellEditor .right-right-edge {
+  position: absolute;
+  right: 0px;
+  top: 190px;
+  width: 20px;
+  height: 210px;
+}
+.extendedCellEditor .bottom-left-edge {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 210px;
+  height: 20px;
+}
+.extendedCellEditor .bottom-center-edge {
+  position: absolute;
+  left: 190px;
+  bottom: 0px;
+  width: 20px;
+  height: 100px;
+}
+.extendedCellEditor .bottom-right-edge {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 210px;
+  height: 20px;
+}
+.extendedCellEditor .left-left-edge {
+  position: absolute;
+  left: 0px;
+  top: 190px;
+  width: 20px;
+  height: 210px;
+}
+.extendedCellEditor .left-center-edge {
+  position: absolute;
+  left: 0px;
+  top: 190px;
+  width: 100px;
+  height: 20px;
+}
+.extendedCellEditor .left-right-edge {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 20px;
+  height: 210px;
+}
+.extendedCellEditor .middle-top-left-edge {
+  position: absolute;
+  left: 71px;
+  top: 138px;
+  width: 154px;
+  height: 20px;
+  transform: rotate(135deg);
+}
+.extendedCellEditor .middle-top-right-edge {
+  position: absolute;
+  right: 71px;
+  top: 137px;
+  width: 154px;
+  height: 20px;
+  transform: rotate(45deg);
+}
+.extendedCellEditor .middle-bottom-left-edge {
+  position: absolute;
+  left: 71px;
+  top: 242px;
+  width: 154px;
+  height: 20px;
+  transform: rotate(45deg);
+}
+.extendedCellEditor .middle-bottom-right-edge {
+  position: absolute;
+  right: 71px;
+  top: 242px;
+  width: 154px;
+  height: 20px;
+  transform: rotate(135deg);
+}
+.extendedCellEditor .wall {
+  background-color: #555;
+}
+.extendedCellEditor .door,
+.extendedCellEditor .doorway {
+  background-color: #555;
+}
+.extendedCellEditor .empty:hover {
+  background-color: #aaa;
+}
+.extendedCellEditor .wall:hover,
+.extendedCellEditor .door:hover,
+.extendedCellEditor .doorway:hover {
+  background-color: #5F6C86;
+}
+.extendedCellEditor .wall:hover::after,
+.extendedCellEditor .door:hover::after,
+.extendedCellEditor .doorway:hover::after {
+  background-color: #aaa;
+}
+.extendedCellEditor .door::after,
+.extendedCellEditor .doorway::after {
+  content: '';
+  display: block;
+  position: relative;
+  background-color: #ccc;
+}
+.extendedCellEditor .right-center-edge.door::after,
+.extendedCellEditor .left-center-edge.door::after {
+  left: 33px;
+  width: 33px;
+  height: 20px;
+}
+.extendedCellEditor .top-left-edge.door::after,
+.extendedCellEditor .top-right-edge.door::after,
+.extendedCellEditor .bottom-left-edge.door::after,
+.extendedCellEditor .bottom-right-edge.door::after {
+  left: 66px;
+  width: 66px;
+  height: 20px;
+}
+.extendedCellEditor .top-center-edge.door::after,
+.extendedCellEditor .bottom-center-edge.door::after {
+  top: 33px;
+  height: 33px;
+  width: 20px;
+}
+.extendedCellEditor .right-left-edge.door::after,
+.extendedCellEditor .right-right-edge.door::after,
+.extendedCellEditor .left-left-edge.door::after,
+.extendedCellEditor .left-right-edge.door::after {
+  top: 66px;
+  height: 66px;
+  width: 20px;
+}
+.extendedCellEditor .right-center-edge.doorway::after,
+.extendedCellEditor .left-center-edge.doorway::after {
+  left: 33px;
+  width: 33px;
+  height: 20px;
+}
+.extendedCellEditor .top-left-edge.doorway::after,
+.extendedCellEditor .top-right-edge.doorway::after,
+.extendedCellEditor .bottom-left-edge.doorway::after,
+.extendedCellEditor .bottom-right-edge.doorway::after {
+  left: 66px;
+  width: 66px;
+  height: 20px;
+}
+.extendedCellEditor .top-center-edge.doorway::after,
+.extendedCellEditor .bottom-center-edge.doorway::after {
+  top: 33px;
+  height: 33px;
+  width: 20px;
+}
+.extendedCellEditor .right-left-edge.doorway::after,
+.extendedCellEditor .right-right-edge.doorway::after,
+.extendedCellEditor .left-left-edge.doorway::after,
+.extendedCellEditor .left-right-edge.doorway::after {
+  top: 66px;
+  height: 66px;
+  width: 20px;
+}
+.extendedCellEditor .middle-top-left-edge.doorway::after,
+.extendedCellEditor .middle-top-right-edge.doorway::after,
+.extendedCellEditor .middle-bottom-left-edge.doorway::after,
+.extendedCellEditor .middle-bottom-right-edge.doorway::after,
+.extendedCellEditor .middle-top-left-edge.door::after,
+.extendedCellEditor .middle-top-right-edge.door::after,
+.extendedCellEditor .middle-bottom-left-edge.door::after,
+.extendedCellEditor .middle-bottom-right-edge.door::after {
+  left: 50px;
+  height: 20px;
+  width: 54px;
+}
+
+.smallPreview {
+  display: flex;
+  flex-direction: row;
+  width: 650px;
+  justify-content: space-around;
+}
+.smallPreview .cell {
+  width: 66px;
+  height: 66px;
+  /* Top */
+  /* Right */
+  /* Bottom */
+  /* Left */
+}
+.smallPreview .cell .top-left-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .cell .top-center-edge {
+  left: 32px;
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .cell .top-right-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .cell .right-left-edge {
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .cell .right-center-edge {
+  left: 32px;
+  top: 32px;
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .cell .right-right-edge {
+  top: 32px;
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .cell .bottom-left-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .cell .bottom-center-edge {
+  left: 32px;
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .cell .bottom-right-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .cell .left-left-edge {
+  top: 32px;
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .cell .left-center-edge {
+  top: 32px;
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .cell .left-right-edge {
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .cell .coords {
+  display: none;
+}
+.smallPreview .right-center-edge.door::after,
+.smallPreview .left-center-edge.door::after,
+.smallPreview .top-left-edge.door::after,
+.smallPreview .top-right-edge.door::after,
+.smallPreview .bottom-left-edge.door::after,
+.smallPreview .bottom-right-edge.door::after {
+  left: 11px;
+  width: 11px;
+  height: 3px;
+}
+.smallPreview .top-center-edge.door::after,
+.smallPreview .bottom-center-edge.door::after,
+.smallPreview .right-left-edge.door::after,
+.smallPreview .right-right-edge.door::after,
+.smallPreview .left-left-edge.door::after,
+.smallPreview .left-right-edge.door::after {
+  top: 11px;
+  height: 11px;
+  width: 3px;
+}
+.smallPreview .right-center-edge.doorway::after,
+.smallPreview .left-center-edge.doorway::after,
+.smallPreview .top-left-edge.doorway::after,
+.smallPreview .top-right-edge.doorway::after,
+.smallPreview .bottom-left-edge.doorway::after,
+.smallPreview .bottom-right-edge.doorway::after {
+  left: 11px;
+  width: 11px;
+  height: 3px;
+}
+.smallPreview .top-center-edge.doorway::after,
+.smallPreview .bottom-center-edge.doorway::after,
+.smallPreview .right-left-edge.doorway::after,
+.smallPreview .right-right-edge.doorway::after,
+.smallPreview .left-left-edge.doorway::after,
+.smallPreview .left-right-edge.doorway::after {
+  top: 11px;
+  height: 11px;
+  width: 3px;
+}
+.smallPreview .extendedCell {
+  width: 66px;
+  height: 66px;
+  /* Top */
+  /* Right */
+  /* Bottom */
+  /* Left */
+  /* Middle Room */
+}
+.smallPreview .extendedCell .top-left-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .extendedCell .top-center-edge {
+  left: 32px;
+  width: 3px;
+  height: 18px;
+}
+.smallPreview .extendedCell .top-right-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .extendedCell .right-left-edge {
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .extendedCell .right-center-edge {
+  top: 32px;
+  width: 18px;
+  height: 3px;
+}
+.smallPreview .extendedCell .right-right-edge {
+  top: 32px;
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .extendedCell .bottom-left-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .extendedCell .bottom-center-edge {
+  left: 32px;
+  width: 3px;
+  height: 18px;
+}
+.smallPreview .extendedCell .bottom-right-edge {
+  width: 35px;
+  height: 3px;
+}
+.smallPreview .extendedCell .left-left-edge {
+  top: 32px;
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .extendedCell .left-center-edge {
+  top: 32px;
+  width: 18px;
+  height: 3px;
+}
+.smallPreview .extendedCell .left-right-edge {
+  width: 3px;
+  height: 35px;
+}
+.smallPreview .extendedCell .middle-top-left-edge {
+  left: 14px;
+  top: 24px;
+  width: 23px;
+  height: 3px;
+  transform: rotate(135deg);
+}
+.smallPreview .extendedCell .middle-top-right-edge {
+  position: absolute;
+  right: 14px;
+  top: 24px;
+  width: 23px;
+  height: 3px;
+  transform: rotate(45deg);
+}
+.smallPreview .extendedCell .middle-bottom-left-edge {
+  position: absolute;
+  left: 14px;
+  top: 40px;
+  width: 23px;
+  height: 3px;
+  transform: rotate(45deg);
+}
+.smallPreview .extendedCell .middle-bottom-right-edge {
+  position: absolute;
+  right: 14px;
+  top: 40px;
+  width: 23px;
+  height: 3px;
+  transform: rotate(135deg);
+}
+.smallPreview .extendedCell .right-center-edge.door::after,
+.smallPreview .extendedCell .left-center-edge.door::after {
+  left: 6px;
+  width: 6px;
+  height: 3px;
+}
+.smallPreview .extendedCell .top-left-edge.door::after,
+.smallPreview .extendedCell .top-right-edge.door::after,
+.smallPreview .extendedCell .bottom-left-edge.door::after,
+.smallPreview .extendedCell .bottom-right-edge.door::after {
+  left: 11px;
+  width: 11px;
+  height: 3px;
+}
+.smallPreview .extendedCell .top-center-edge.door::after,
+.smallPreview .extendedCell .bottom-center-edge.door::after {
+  top: 6px;
+  height: 6px;
+  width: 3px;
+}
+.smallPreview .extendedCell .right-left-edge.door::after,
+.smallPreview .extendedCell .right-right-edge.door::after,
+.smallPreview .extendedCell .left-left-edge.door::after,
+.smallPreview .extendedCell .left-right-edge.door::after {
+  top: 11px;
+  height: 11px;
+  width: 3px;
+}
+.smallPreview .extendedCell .right-center-edge.doorway::after,
+.smallPreview .extendedCell .left-center-edge.doorway::after {
+  left: 6px;
+  width: 6px;
+  height: 3px;
+}
+.smallPreview .extendedCell .top-left-edge.doorway::after,
+.smallPreview .extendedCell .top-right-edge.doorway::after,
+.smallPreview .extendedCell .bottom-left-edge.doorway::after,
+.smallPreview .extendedCell .bottom-right-edge.doorway::after {
+  left: 11px;
+  width: 1px;
+  height: 3px;
+}
+.smallPreview .extendedCell .top-center-edge.doorway::after,
+.smallPreview .extendedCell .bottom-center-edge.doorway::after {
+  top: 6px;
+  height: 6px;
+  width: 3px;
+}
+.smallPreview .extendedCell .right-left-edge.doorway::after,
+.smallPreview .extendedCell .right-right-edge.doorway::after,
+.smallPreview .extendedCell .left-left-edge.doorway::after,
+.smallPreview .extendedCell .left-right-edge.doorway::after {
+  top: 11px;
+  height: 11px;
+  width: 3px;
+}
+.smallPreview .extendedCell .middle-top-left-edge.doorway::after,
+.smallPreview .extendedCell .middle-top-right-edge.doorway::after,
+.smallPreview .extendedCell .middle-bottom-left-edge.doorway::after,
+.smallPreview .extendedCell .middle-bottom-right-edge.doorway::after,
+.smallPreview .extendedCell .middle-top-left-edge.door::after,
+.smallPreview .extendedCell .middle-top-right-edge.door::after,
+.smallPreview .extendedCell .middle-bottom-left-edge.door::after,
+.smallPreview .extendedCell .middle-bottom-right-edge.door::after {
+  left: 6px;
+  height: 3px;
+  width: 10px;
+}
+
+/*# sourceMappingURL=index.710e9678.css.map */
