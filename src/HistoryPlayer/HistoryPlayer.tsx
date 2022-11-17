@@ -2,6 +2,8 @@ import { useCallback, useState, useEffect } from 'react'
 import Button from '@mui/material/Button'
 import { HistoryEntry } from '../types'
 import FullMap from '../FullMap'
+import VisitMap from '../VisitMap/VisitMap'
+import Checkbox from '@mui/material/Checkbox'
 
 type HistoryPlayerProps = {
     history: HistoryEntry[]
@@ -11,6 +13,7 @@ type HistoryPlayerProps = {
 export default function HistoryPlayer({ history, onClose }: HistoryPlayerProps) {
   const [currentFrame, setCurrentFrame] = useState<number>(0)
   const [playing, setPlaying] = useState<boolean>(false)
+  const [showVisitMap, setShowVisitMap] = useState<boolean>(false) 
   const [intervalTimer, setIntervalTimer] = useState<NodeJS.Timer>()
 
   const handleAdvanceFrame = useCallback(() => {
@@ -21,6 +24,8 @@ export default function HistoryPlayer({ history, onClose }: HistoryPlayerProps) 
     setPlaying(true)
     setIntervalTimer(setInterval(handleAdvanceFrame, 1000))
   }, [handleAdvanceFrame])
+
+  const handleChangeVisit = useCallback(() => setShowVisitMap(value => !value), [])
 
   const handlePause = useCallback(() => {
     if (playing) {
@@ -33,18 +38,13 @@ export default function HistoryPlayer({ history, onClose }: HistoryPlayerProps) 
     setCurrentFrame(0)
   }, [history])
 
-  // @ts-ignore
-  global.window.visitedCells = history[currentFrame].visited
-  // @ts-ignore
-  global.window.openCells = history[currentFrame].openCells
-  // @ts-ignore
-  global.window.activeQueue = history[currentFrame].activeQueue
-  // @ts-ignore
-  global.window.passingQueue = history[currentFrame].passingQueue
-
 return (<div className="historyPlayer">
-    {currentFrame in history && <FullMap map={history[currentFrame].map} selectedCell={null} />}
+    {currentFrame in history && <>
+      <FullMap map={history[currentFrame].map} selectedCell={null} />
+      {showVisitMap ? <VisitMap history={history[currentFrame]}/> : null}
+    </>}
 {playing ? <Button onClick={handlePause}>Пауза ({currentFrame + 1} из {history.length})</Button> : <Button onClick={handlePlay}>Запуск</Button>}
     <Button onClick={onClose}>Закрыть плеер</Button>
+    <label><Checkbox checked={showVisitMap} onChange={handleChangeVisit} />Раскрашивать посещённые поля</label>
   </div>)
 }

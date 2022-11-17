@@ -21,12 +21,20 @@ export const UNUSED_TILES = 'unused_tiles'
 
 export type ErrorReasonType = typeof END_UNREACHABLE | typeof END_BLOCKED | typeof CANNOT_FIT | typeof GENERIC_ERROR | typeof UNUSED_TILES
 
-export type Candidate = {
+export type SubCell = {
   cellX: number
   cellY: number
-  subCell: typeof TOP_LEFT | typeof TOP_RIGHT | typeof BOTTOM_LEFT | typeof BOTTOM_RIGHT | typeof MIDDLE
-  // node: Room
+  subCell: typeof TOP_LEFT | typeof TOP_RIGHT | typeof BOTTOM_LEFT | typeof BOTTOM_RIGHT | typeof MIDDLE  
+}
+
+export type Candidate = SubCell & {
   direction: Direction
+}
+
+export type Point = {
+  x: number
+  y: number
+  subCell: typeof TOP_LEFT | typeof TOP_RIGHT | typeof BOTTOM_LEFT | typeof BOTTOM_RIGHT | typeof MIDDLE
 }
 
 export type CellSide = {
@@ -55,10 +63,10 @@ export type PointType = {
 
 export type HistoryEntry = {
   map: GameMap
-  visited: string[]
-  openCells: PointType[]
-  activeQueue: Candidate[]
-  passingQueue: Candidate[]
+  visited?: string[]
+  openCells?: PointType[]
+  activeQueue?: Candidate[]
+  passingQueue?: Candidate[]
 }
 
 export type GraphErrorType = {

@@ -176,6 +176,9 @@ export const getMapHash = (map: GameMap): string => {
 }
 
 export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQueue: Candidate[]): [PointType[], Candidate[], string[]] => {
+  const maxX = map.length - 1
+  const maxY = (map[0] || []).length - 1
+
   const cellQueue: Candidate[] = []
 
   const visitedSet = new Set<string>()
@@ -206,13 +209,14 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
     }*/
     cellQueue.push({
       cellX: 0,
-      cellY: 2,
+      cellY: maxY,
       subCell: BOTTOM_LEFT,
       // node: startingNode,
       direction: 'right'
     })
   
-    visitedSet.add(`0:2:${BOTTOM_LEFT}`)  
+    visitedSet.add(`0:${maxY}:${BOTTOM_LEFT}`)
+    console.log('Default queue values')
   }
 
   // const visitedRooms: Record<string, Room> = {}
@@ -244,11 +248,16 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
       const cell = map[cellX][cellY]
 
       switch (subCell) {
+        // [X][ ]
+        // [ ][ ]
         case TOP_LEFT: {
           // Going left
           if (cell && cell[EDGE_LEFT].r !== WALL) {
             // The path is open, at least
             if (cellX > 0) {
+              if (cellX > maxX) {
+                console.error('Map column empty')
+              }
               const destinationCell = map[cellX - 1][cellY]
               if (destinationCell) {
                 if (destinationCell[EDGE_RIGHT].l !== WALL) {
@@ -388,7 +397,7 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
           // Going right
           if (cell && cell[EDGE_RIGHT].l !== WALL) {
             // The path is open, at least
-            if (cellX < 2) {
+            if (cellX < maxX) {
               const destinationCell = map[cellX + 1][cellY]
               if (destinationCell) {
                 if (destinationCell[EDGE_LEFT].r !== WALL) {
@@ -487,7 +496,7 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
           // Going down
           if (cell && cell[EDGE_BOTTOM].r !== WALL) {
             // The path is open, at least
-            if (cellY < 2) {
+            if (cellY < maxY) {
               const destinationCell = map[cellX][cellY + 1]
               if (destinationCell) {
                 if (destinationCell[EDGE_TOP].l !== WALL) {
@@ -573,7 +582,7 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
           // Going right
           if (cell && cell[EDGE_RIGHT].r !== WALL) {
             // The path is open, at least
-            if (cellX < 2) {
+            if (cellX < maxX) {
               const destinationCell = map[cellX + 1][cellY]
               if (destinationCell) {
                 if (destinationCell[EDGE_LEFT].l !== WALL) {
@@ -600,7 +609,7 @@ export const buildGraph = (map: GameMap, initialVisitedSet: string[], initialQue
           // Going down
           if (cell && cell[EDGE_BOTTOM].l !== WALL) {
             // The path is open, at least
-            if (cellY < 2) {
+            if (cellY < maxY) {
               const destinationCell = map[cellX][cellY + 1]
               if (destinationCell) {
                 if (destinationCell[EDGE_TOP].r !== WALL) {
@@ -735,7 +744,7 @@ export const floodFill = (startPoint: PointType, endPoint: PointType, gameMap: G
 
 const doorAdjancedToEdge = (edge: CellSide): boolean => (edge.l === DOOR || edge.r === DOOR || edge.l === DOORWAY || edge.r === DOORWAY)
 
-export const nodeConflictsWithBorders = (cell: Cell|ExtendedCell, x: number, y: number): boolean => {
+export const nodeConflictsWithBorders = (cell: Cell|ExtendedCell, x: number, y: number, maxX: number, maxY: number): boolean => {
   // Top conflicts
   if (y === 0 && doorAdjancedToEdge(cell[EDGE_TOP])) {
     return true
@@ -748,13 +757,13 @@ export const nodeConflictsWithBorders = (cell: Cell|ExtendedCell, x: number, y: 
   }
 
   // Bottom conflicts
-  if (y === 2 && doorAdjancedToEdge(cell[EDGE_BOTTOM])
+  if (y === maxY && doorAdjancedToEdge(cell[EDGE_BOTTOM])
   ) { 
     return true
   }
 
   // Right conflicts
-  if (x === 2 && doorAdjancedToEdge(cell[EDGE_RIGHT])
+  if (x === maxX && doorAdjancedToEdge(cell[EDGE_RIGHT])
   ) { 
     return true
   }
@@ -769,7 +778,7 @@ export const fitCellAt = (cell: Cell | ExtendedCell, x: number, y: number, map: 
       const newMap = map.map(col => [...col])
       newMap[x][y] = rotation
 
-      if (!nodeConflictsWithBorders(rotation, x, y)) {
+      if (!nodeConflictsWithBorders(rotation, x, y, map.length - 1, map[0].length - 1)) {
         return [newMap, true]
       }
     }

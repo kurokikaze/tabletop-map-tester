@@ -8,6 +8,9 @@ export const tiles: Cell[] = [
     [{ l: EMPTY, c: DOORWAY, r: WALL }, { l: DOORWAY, c: DOOR, r: EMPTY, }, { l: EMPTY, c: WALL, r: EMPTY, }, { l: EMPTY, c: EMPTY, r: EMPTY, }, ],
     [{ l: EMPTY, c: EMPTY, r: EMPTY, }, { l: EMPTY, c: EMPTY, r: EMPTY, }, { l: EMPTY, c: WALL, r: WALL, }, { l: WALL, c: DOORWAY, r: EMPTY, }],
     [{ l: EMPTY, c: DOOR, r: WALL, }, { l: WALL, c: WALL, r: EMPTY }, { l: WALL, c: EMPTY, r: EMPTY }, { l: WALL, c: EMPTY, r: EMPTY, }],
+    [{ l: EMPTY, c: EMPTY, r: EMPTY, }, { l: EMPTY, c: EMPTY, r: EMPTY, }, { l: EMPTY, c: WALL, r: WALL, }, { l: WALL, c: DOORWAY, r: EMPTY, }],
+    [{ l: EMPTY, c: DOOR, r: WALL, }, { l: WALL, c: WALL, r: EMPTY }, { l: WALL, c: EMPTY, r: EMPTY }, { l: WALL, c: EMPTY, r: EMPTY, }],
+    [{ l: EMPTY, c: DOOR, r: WALL, }, { l: WALL, c: WALL, r: EMPTY }, { l: WALL, c: EMPTY, r: EMPTY }, { l: WALL, c: EMPTY, r: EMPTY, }],
 ]
 
 const rotateRoomRight = (room: MiddleRoom): MiddleRoom => ({ tl: room.tr, tr: room.br, br: room.bl, bl: room.tr })

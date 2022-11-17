@@ -16,16 +16,23 @@ import TileEditModal from './TileEditModal/TileEditModal'
 import ErrorList from './ErrorList/ErrorList'
 import { buildGraph, fitCellAt, getMapHash } from './astar' 
 import HistoryPlayer from './HistoryPlayer/HistoryPlayer'
-import { Candidate, Cell, Direction, GameMap, GraphErrorType, HistoryEntry, PointType, TOP_LEFT, END_BLOCKED, END_UNREACHABLE, CANNOT_FIT, ErrorReasonType, GENERIC_ERROR, UNUSED_TILES, ExtendedCell, SavedTileSet } from './types';
+import { Candidate, Cell, Direction, GameMap, GraphErrorType, HistoryEntry, PointType, END_BLOCKED, END_UNREACHABLE, CANNOT_FIT, ErrorReasonType, GENERIC_ERROR, UNUSED_TILES, ExtendedCell, SavedTileSet, TOP_RIGHT, BOTTOM_LEFT, Point, EMPTY, SubCell, BOTTOM_RIGHT, TOP_LEFT } from './types';
 import SaveLoadModal from './SaveLoadModal/SaveLoadModal'
+import PointOfInterestEditor from './PointOfInterestEditor/PointOfInterestEditor';
+import { createInitialMap } from './utils';
 
 const LOCAL_STORAGE_KEY = 'savedSets'
 
-const testMap: GameMap = [
+const startingTestMap: GameMap = [
   [
     false,
     false,
     startingTile,
+  ],
+  [
+    false,
+    false,
+    false,
   ],
   [
     false,
@@ -40,34 +47,53 @@ const testMap: GameMap = [
 ]
 
 const approxRuns: Record<number, number> = {
-  7: 255259,
-  6: 37784,
-  5: 4329,
-  4: 489,
-  3: 63,
-  2: 8,
-  1: 1,
+  10: 61710330,
+  9: 4576885,
+  8: 883804, // 2097152
+  7: 255259, // 262144
+  6: 37784, // 32768
+  5: 4329, // 4096 /?
+  4: 489, // 512
+  3: 63, /// 64
+  2: 8, // 8
+  1: 1, // 1
 }
 
 // Магические константы - зло
 const START_TILE_INDEX = -1
 const END_TILE_INDEX = -2
 
+const targetCache: Record<number,Record<number, Record<string, PointType>>> = {}
 const getTargetCoords = (direction: Direction, x: number, y: number): PointType => {
+  if (x in targetCache && y in targetCache[x] && direction in targetCache[x][y]) {
+    return targetCache[x][y][direction]
+  }
+  let result = undefined
   switch (direction) {
     case 'top': {
-      return { x, y: y - 1 }
+      result = { x, y: y - 1 }
+      break
     }
     case 'left': {
-      return { x: x - 1, y }
+      result = { x: x - 1, y }
+      break
     }
     case 'bottom': {
-      return { x, y: y + 1 }
+      result = { x, y: y + 1 }
+      break
     }
     case 'right': {
-      return { x: x + 1, y }
+      result = { x: x + 1, y }
     }
   }
+  if (!(x in targetCache)) {
+    targetCache[x] = {}
+  }
+  if (!(y in targetCache[x])) {
+    targetCache[x][y] = {}
+  }
+  targetCache[x][y][direction] = result
+  return result
 }
 
 const mergeArrays = (arr1: PointType[], arr2: PointType[]): PointType[] => {
@@ -89,10 +115,23 @@ const mergeArrays = (arr1: PointType[], arr2: PointType[]): PointType[] => {
   return result
 }
 
+const SubCellToCoord = ({cellX, cellY, subCell}: SubCell): string => `${cellX}:${cellY}:${subCell}`
+
 function App() {
   const [cellX, setCellX] = useState<number>()
   const [cellY, setCellY] = useState<number>()
+
+  const [testMap, setTestMap] = useState<GameMap>(startingTestMap)
+
+  const maxX = testMap.length - 1
+  const maxY = testMap[0].length - 1
+
+  const [startingCoord, setStartingCoord] = useState<SubCell>({cellX: 0, cellY: maxY, subCell: BOTTOM_RIGHT})
+  const [endingCoord, setEndingCoord] = useState<SubCell>({cellX: maxX, cellY:0, subCell: TOP_RIGHT})
+  const [poiEditorOpen, setPoiEditorOpen] = useState<boolean>(false)
+
   const [map, setMap] = useState<GameMap>([...testMap])
+
   const [tiles, setTiles] = useState<(Cell|ExtendedCell)[]>([...initialTiles])
   const [currentTiles, setCurrentTiles] = useState<(Cell|ExtendedCell)[]>([...initialTiles])
   const [selectedPiece, setSelectedPiece] = useState<number>(0)
@@ -124,16 +163,19 @@ function App() {
 
   const startingMap: GameMap = useMemo(() => {
     const result = [...map.map(row => [...row])]
+    const maxX = map.length - 1
+    const maxY = map[0].length - 1
 
     if (alternateStartingTile) {
-      result[0][2] = alternateStartingTile
+      result[0][maxY] = alternateStartingTile
     }
 
     if (alternateEndingTile) {
-      result[2][0] = alternateEndingTile
+      result[maxX][0] = alternateEndingTile
     }
     return result
   }, [map, alternateStartingTile, alternateEndingTile])
+
 
   const handlePieceFit = useCallback((selectedIndex: number) => {
     if (cellX !== undefined && cellY !== undefined) {
@@ -218,7 +260,10 @@ function App() {
     let errors: GraphErrorType[] = []
     let reportedCombinations = 0
 
-    const [openCells] = buildGraph([...startingMap], [], [])
+    const [openCells] = buildGraph([...startingMap], [SubCellToCoord(startingCoord)], [{
+      ...startingCoord,
+      direction: 'left',
+    }])
     setExpectedRuns(approxRuns[currentTiles.length])
     setHistoryLoaded(false)
     setErrorsOpen(false)
@@ -229,9 +274,13 @@ function App() {
         workQueue.unshift({
           map: [...startingMap],
           tiles: [...currentTiles],
-          visitedSet: [],
+          visitedSet: [SubCellToCoord(startingCoord)],
           initialQueue: {
-            active: [],
+            active: [{
+              ...startingCoord,
+              subCell: TOP_LEFT,
+              direction: 'top',
+            }],
             passing: [],
           },
           openCells: openCells.filter(openCell => openCell.x !== x && openCell.y !== y),
@@ -260,7 +309,7 @@ function App() {
           return true
         }
   
-        const {map, tiles, history, initialQueue, visitedSet, openCells, tile, pointX, pointY} = workQueue.pop() as WorkEntry
+        const {map, tiles, history, initialQueue, visitedSet, openCells, tile, pointX, pointY} = workQueue.shift() as WorkEntry
         let newMap: GameMap = []
         let newHistory = [...history]
         let result = false
@@ -275,9 +324,12 @@ function App() {
 
         while (
           (
+            // Крутим тайл пока выход заблокирован
             endIsBlocked
+            // Или тайл не подходит,
             || (newTiles.length && (!result || (newOpenCells.length + initialQueue.passing.length === 0)))
-            || (!newTiles.length && !newVisitedSet.includes('2:0:top_right'))
+            // или выход заблокирован
+            || (!newTiles.length && !newVisitedSet.includes(SubCellToCoord(endingCoord)))
           )
           && tries > 0) {
           if (tries < 4) {
@@ -289,17 +341,14 @@ function App() {
           newInitialQueue = graphResult[1]
           newVisitedSet = graphResult[2]
 
+          // console.log(`EndingCoord: ${JSON.stringify(endingCoord, null, 2)}`)
           // Проверим не заблокирован ли выход
           if (
-            ( result &&
-              (newMap[1][0] && newMap[2][1])
-            )
-            && !newVisitedSet.includes('2:0:top_right')
+            result
+            && !newVisitedSet.includes(SubCellToCoord(endingCoord))
           ) {
-            const [openEndCells] = buildGraph(newMap, ['2:0:top_right'], [{
-              cellX: 2,
-              cellY: 0,
-              subCell: TOP_LEFT,
+            const [openEndCells] = buildGraph(newMap, [SubCellToCoord(endingCoord)], [{
+              ...endingCoord,
               direction: 'left'
             }])
 
@@ -309,7 +358,7 @@ function App() {
           }
 
           tries--
-          newHistory.push({ map: [...newMap], visited: [...newVisitedSet], openCells: newOpenCells, activeQueue: initialQueue.active, passingQueue: initialQueue.passing })
+          newHistory.push({ map: [...newMap], openCells: newOpenCells, visited: newVisitedSet, passingQueue: initialQueue.passing })
         }
   
         if (!usedCombinations.has(getMapHash(newMap))) {
@@ -321,13 +370,13 @@ function App() {
               // Либо у нас ещё остались тайлы для размещения, но размещать некуда (нет новых открытых тайлов и нет проходящих открытых workEntries)
               (newTiles.length && (!result || (newOpenCells.length + initialQueue.passing.length === 0))) ||
               // Либо тайлов у нас не осталось, но мы не можем достигнуть выхода
-              (!newTiles.length && !(newVisitedSet.includes('2:0:top_right')))
+              (!newTiles.length && !(newVisitedSet.includes(SubCellToCoord(endingCoord))))
             )
           ) {
             let reason: ErrorReasonType = GENERIC_ERROR
             if (endIsBlocked) {
               reason = END_BLOCKED
-            } else if (!newTiles.length && !(newVisitedSet.includes('2:0:top_right'))) {
+            } else if (!newTiles.length && !(newVisitedSet.includes(SubCellToCoord(endingCoord)))) {
               reason = END_UNREACHABLE
             } else if (!result) {
               reason = CANNOT_FIT
@@ -337,15 +386,30 @@ function App() {
 
             errors.push({ map, history: newHistory, tile, pointX, pointY, reason })
           } else if (newTiles.length) {
+            // Объединяем очереди (будут по разному разделены для разных тайлов)
             const newTotalQueue = [...newInitialQueue, ...initialQueue.passing]
-            newTiles.forEach((_, newTileIndex) => {
-              newOpenCells.forEach(({ x, y }, cellId) => {
+
+            type ExpandedCandidate = Candidate & {
+              targetCell: PointType
+            }
+            // Сразу вычисляем целевые координаты для каждой записи в очереди
+            const expandedQueue: ExpandedCandidate[] = newTotalQueue.map(queueItem => ({
+              ...queueItem,
+              targetCell: getTargetCoords(queueItem.direction, queueItem.cellX, queueItem.cellY)
+            }))
+            // Для каждого нового тайла попробовать его размещение в каждой из новых открытых клеток
+            for (let newTileIndex = 0; newTileIndex < newTiles.length; newTileIndex++) {
+            // newTiles.forEach((_, newTileIndex) => {
+              for (let cellId = 0; cellId < newOpenCells.length; cellId++) {
+                
+              // newOpenCells.forEach(({ x, y }, cellId) => {
+                const { x, y } = newOpenCells[cellId]
                 const active: Candidate[] = []
                 const passing: Candidate[] = []
 
-                newTotalQueue.forEach((entry) => {
-                  const { cellX, cellY, direction } = entry
-                  const targetCell = getTargetCoords(direction, cellX, cellY)
+                // Разделяем общую очередь на активную и проходящую для этого сочетания тайлов
+                expandedQueue.forEach((entry) => {
+                  const { targetCell } = entry
                   
                   if (targetCell.x === x && targetCell.y === y) {
                     active.push(entry)
@@ -368,8 +432,8 @@ function App() {
                   pointX: x,
                   pointY: y,
                 })
-              })
-            })
+              }
+            }
           }
 
           usedCombinations.add(getMapHash(newMap))
@@ -377,11 +441,12 @@ function App() {
       }
   
       setRunsDone(combinations)
+      setCalculating(false)
       setExpectedRuns(0)
       setErrors(errors)
     }
     doTheWork()
-  }, [currentTiles, startingMap])
+  }, [currentTiles, startingMap, endingCoord, startingCoord])
 
   const handleEditTile = useCallback((tileIndex: number) => {
     setEditedTile(currentTiles[tileIndex])
@@ -400,6 +465,41 @@ function App() {
     setEditedTileIndex(END_TILE_INDEX)
     setEditModalOpen(true)
   }, [alternateEndingTile])
+
+  const handleMapSetup = useCallback((newWidth: number, newHeight: number, startingTilePos: Point, endingTilePos: Point) => {
+    const newMap = createInitialMap(newWidth, newHeight, startingTile, startingTilePos, endingTile, endingTilePos)
+
+    setTestMap(newMap)
+    setMap(newMap)
+    setPoiEditorOpen(false)
+    setStartingCoord({
+      cellX: startingTilePos.x,
+      cellY: startingTilePos.y,
+      subCell: BOTTOM_LEFT,
+    })
+    console.log(`Starting coords: ${startingTilePos.x}:${startingTilePos.y}`)
+    setEndingCoord({
+      cellX: endingTilePos.x,
+      cellY: endingTilePos.y,
+      subCell: TOP_RIGHT,
+    })
+    const neededTiles = newWidth * newHeight - 2
+    console.log(`Number of current tiles: ${tiles.length}`)
+    console.log(`Number of current edited tiles: ${currentTiles.length}`)
+    console.log(`Number of tiles needed for the map: ${neededTiles}`)
+    if (neededTiles < tiles.length) {
+      setTiles(tiles.slice(0, neededTiles))
+      setCurrentTiles(currentTiles.slice(0, neededTiles))
+    } else if (neededTiles > tiles.length) {
+      const missingTilesNumber = neededTiles - tiles.length
+      const missingTiles = new Array(missingTilesNumber).fill([{ l: EMPTY, c: EMPTY, r: EMPTY, }, { l: EMPTY, c: EMPTY, r: EMPTY }, { l: EMPTY, c: EMPTY, r: EMPTY }, { l: EMPTY, c: EMPTY, r: EMPTY }])
+      const missingCurrentTiles = new Array(missingTilesNumber).fill([{ l: EMPTY, c: EMPTY, r: EMPTY, }, { l: EMPTY, c: EMPTY, r: EMPTY }, { l: EMPTY, c: EMPTY, r: EMPTY }, { l: EMPTY, c: EMPTY, r: EMPTY }])
+      setTiles([...tiles, ...missingTiles])
+      setCurrentTiles([...tiles, ...missingCurrentTiles])
+    }
+  }, [tiles, currentTiles])
+
+  const handlePoiCancel = useCallback(() => setPoiEditorOpen(false), [])
 
   const handleSave = useCallback(() => {
     if (editedTile) {
@@ -420,7 +520,7 @@ function App() {
     setMap([...testMap])
     setHistoryLoaded(false)
     setErrorsOpen(false)
-  }, [tiles])
+  }, [tiles, testMap])
 
   const handleCellReset = useCallback(() => {
     setTiles([...initialTiles])
@@ -431,7 +531,9 @@ function App() {
   const loadHistoryIntoPlayer = useCallback((index: number) => {
     setHistoryLoaded(true)
     setSelectedError(index)
-  }, [])
+    // @ts-ignore
+    window.selectedError = errors[index]
+  }, [errors])
 
   const handleOpenSaveLoadModal = useCallback(() => setSaveLoadOpen(true), [])
 
@@ -465,7 +567,7 @@ function App() {
         justifyContent: 'space-around',
         marginBottom: 2,
       }}>
-        <Paper style={{ width: 600 }}>
+        <Paper style={{ width: 'fit-content' }}>
           {
           historyLoaded && selectedError !== undefined && selectedError in errors
             ? <HistoryPlayer onClose={() => setHistoryLoaded(false)} history={errors[selectedError].history} />
@@ -486,7 +588,6 @@ function App() {
           <Button variant="contained" disabled={cellX === undefined || cellY === undefined} onClick={() => handlePieceFit(selectedPiece)}>Вставить выбранный тайл</Button>
           <Button variant="contained" disabled={cellX === undefined || cellY === undefined} onClick={handleRandomPieceFit}>Вставить случайный тайл</Button>
         </ButtonGroup>
-        {/* <Button variant="contained" onClick={handleMapSetup}>Начать процесс</Button> */}
         {calculating ? <Button variant="contained" onClick={() => { flags.current.stop = true }}>Остановить</Button> : <Button variant="contained" onClick={calcEveryTiling}>Проверить все варианты</Button>}
         <Button variant="contained" onClick={handleReset}>Сброс</Button>
         <Button variant="contained" onClick={handleCellReset}>Сброс тайлов</Button>
@@ -509,13 +610,17 @@ function App() {
         marginBottom: 2,
       }}>
         <Button variant="contained" onClick={handleOpenSaveLoadModal}>Сохранить/Загрузить наборы тайлов</Button>
+        <Button variant="contained" disabled={calculating} onClick={() => setPoiEditorOpen(true)}>Настройка карты</Button>
       </Container>
       {runsDone > 0 ? <div style={{ marginBottom: 50 }}>
         {expectedRuns > 0 && <LinearProgress value={100 * (runsDone / expectedRuns)}/>}
         <div><h4>Комбинаций проверено:</h4> {runsDone}</div>
       {!errorsOpen && <div><h4>Из них ошибочных:</h4> {errors.length} {errors.length ? <Button variant="contained" onClick={() => setErrorsOpen(true)}>Раскрыть</Button> : null}</div>}
         {errorsOpen && <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-          <ErrorList errors={errors} onAction={loadHistoryIntoPlayer} selected={selectedError} />
+          <div style={{ display: 'flex', flexDirection: 'column', width: 600, justifyContent: 'space-around' }}>
+            <div><Button variant="contained" onClick={() => setErrorsOpen(false)}>Свернуть</Button></div>
+            <div><ErrorList errors={errors} onAction={loadHistoryIntoPlayer} selected={selectedError} /></div>
+          </div>
         </div>}
       </div> : null}
       <div style={{ width: '90%', display: 'flex', flexDirection: 'row', maxWidth: '100%', overflowX: 'scroll', justifyContent: 'space-between', marginBottom: 50 }}>
@@ -524,7 +629,7 @@ function App() {
           onClick={() => setSelectedPiece(i)}
         >
             {tile.length === 4 ? <MapCell cell={tile} x={0} y={0} /> : <MapExtendedCell cell={tile} />}
-            {currentTiles.length === 7 ? <EditIcon sx={{ color: '#5F6C86', cursor: 'pointer' }} onClick={() => handleEditTile(i)}/> : null}
+            {currentTiles.length === tiles.length ? <EditIcon sx={{ color: '#5F6C86', cursor: 'pointer' }} onClick={() => handleEditTile(i)}/> : null}
           </div>
         </Paper>)}
       </div>
@@ -546,6 +651,15 @@ function App() {
           startingTile: alternateStartingTile || startingTile,
           endingTile: alternateEndingTile || endingTile,
         }}
+      />
+      <PointOfInterestEditor
+        open={poiEditorOpen}
+        onClose={handlePoiCancel}
+        mapWidth={maxX}
+        mapHeight={maxY}
+        onSave={handleMapSetup}
+        start={{ x: 0, y: maxY - 1, subCell: BOTTOM_LEFT }}
+        end={{ x: maxX - 1, y: 0, subCell: TOP_RIGHT }}
       />
     </div>
   );

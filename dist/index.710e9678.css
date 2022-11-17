@@ -230,13 +230,18 @@ body {
 .fullMap {
     display: flex;
     flex-direction: row;
-    width: 600px;
+    width: fit-content;
 }
 
 .fullMap .mapRow {
     display: flex;
     flex-direction: column;
 }
+
+.historyPlayer {
+  position: relative;
+}
+
 .extendedCell {
   display: block;
   position: relative;
@@ -839,6 +844,27 @@ body {
   left: 50px;
   height: 20px;
   width: 54px;
+}
+
+.visitMap {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.subrow {
+  display: flex;
+  flex-direction: row;
+  height: 100px;
+  margin: 0;
+}
+.subcell {
+  display: block;
+  width: 100px;
+  height: 100px;
+  margin: 0;
+}
+.subcell.active {
+  background-color: rgba(201, 59, 133, 0.8);
 }
 
 .smallPreview {
