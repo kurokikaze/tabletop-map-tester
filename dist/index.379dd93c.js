@@ -22936,8 +22936,8 @@ function App() {
         ];
         const maxX = map1.length - 1;
         const maxY = map1[0].length - 1;
-        if (alternateStartingTile) result[0][maxY] = alternateStartingTile;
-        if (alternateEndingTile) result[maxX][0] = alternateEndingTile;
+        if (alternateStartingTile) result[startingCoord.cellX][startingCoord.cellY] = alternateStartingTile;
+        if (alternateEndingTile) result[endingCoord.cellX][endingCoord.cellY] = alternateEndingTile;
         return result;
     }, [
         map1,
@@ -23201,6 +23201,7 @@ function App() {
     ]);
     const handleMapSetup = _react.useCallback((newWidth, newHeight, startingTilePos, endingTilePos)=>{
         const newMap = _utils.createInitialMap(newWidth, newHeight, _tiles.startingTile, startingTilePos, _tiles.endingTile, endingTilePos);
+        console.dir(newMap);
         setTestMap(newMap);
         setMap(newMap);
         setPoiEditorOpen(false);
@@ -87533,7 +87534,7 @@ $RefreshReg$(_c, "PointOfInterestEditor");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-runtime":"6Ds2u","react":"4mchR","@mui/material":"barSc","./Point":"iePWq","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13","./Warning.svg":"20U8q","./ShapePreview":"2kn6h"}],"iePWq":[function(require,module,exports) {
+},{"react/jsx-runtime":"6Ds2u","react":"4mchR","@mui/material":"barSc","./Point":"iePWq","./Warning.svg":"20U8q","./ShapePreview":"2kn6h","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"9pz13"}],"iePWq":[function(require,module,exports) {
 var $parcel$ReactRefreshHelpers$f2ed = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -87791,7 +87792,7 @@ function createInitialMap(width, height, startingTile, startingPos, endingTile, 
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const reportWebVitals = (onPerfEntry)=>{
-    if (onPerfEntry && onPerfEntry instanceof Function) require("f3362b6551df21f").then(({ getCLS , getFID , getFCP , getLCP , getTTFB  })=>{
+    if (onPerfEntry && onPerfEntry instanceof Function) require("396b354f55f3a0af").then(({ getCLS , getFID , getFCP , getLCP , getTTFB  })=>{
         getCLS(onPerfEntry);
         getFID(onPerfEntry);
         getFCP(onPerfEntry);
@@ -87801,7 +87802,7 @@ const reportWebVitals = (onPerfEntry)=>{
 };
 exports.default = reportWebVitals;
 
-},{"f3362b6551df21f":"b8Hkq","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"b8Hkq":[function(require,module,exports) {
+},{"396b354f55f3a0af":"b8Hkq","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"b8Hkq":[function(require,module,exports) {
 module.exports = require("./helpers/browser/js-loader")(require('./helpers/bundle-url').getBundleURL('hjDlF') + "web-vitals.1c437fcb.js" + "?" + Date.now()).catch((err)=>{
     delete module.bundle.cache[module.id];
     throw err;

@@ -167,15 +167,14 @@ function App() {
     const maxY = map[0].length - 1
 
     if (alternateStartingTile) {
-      result[0][maxY] = alternateStartingTile
+      result[startingCoord.cellX][startingCoord.cellY] = alternateStartingTile
     }
 
     if (alternateEndingTile) {
-      result[maxX][0] = alternateEndingTile
+      result[endingCoord.cellX][endingCoord.cellY] = alternateEndingTile
     }
     return result
   }, [map, alternateStartingTile, alternateEndingTile])
-
 
   const handlePieceFit = useCallback((selectedIndex: number) => {
     if (cellX !== undefined && cellY !== undefined) {
@@ -469,6 +468,7 @@ function App() {
   const handleMapSetup = useCallback((newWidth: number, newHeight: number, startingTilePos: Point, endingTilePos: Point) => {
     const newMap = createInitialMap(newWidth, newHeight, startingTile, startingTilePos, endingTile, endingTilePos)
 
+    console.dir(newMap);
     setTestMap(newMap)
     setMap(newMap)
     setPoiEditorOpen(false)
