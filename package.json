@@ -3,6 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.0",
+    "@mui/material": "^6.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-window": "^1.8.10",
+    "vite": "^5.4.4"
+  },
+  "old-dependencies": {
     "@babel/core": "7.12.3",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",

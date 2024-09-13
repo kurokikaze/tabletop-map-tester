@@ -41,7 +41,7 @@ export default function PointOfInterestEditor({ open, onClose, onSave, mapWidth,
   const tooltipText = errors.length ? errors.join(', ') : 'Всё в порядке'
   const submitDisabled = (startingPoint.x >= width) || (startingPoint.y >= height) || (endingPoint.x >= width) || (endingPoint.y >= height)
 
-  return (<Modal sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-around' }} open={open} onClose={onClose} onBackdropClick={onClose}>
+  return (<Modal sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-around' }} open={open} onClose={onClose}>
     <Paper sx={{ width: 500, height: 600, alignSelf: 'center', backgroundColor: '#488DAC', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', marginTop: 40, marginBottom: 40 }}>
       <Box
         sx={{ width: '100%', height: 60, maxWidth: 650, bgcolor: '#5f6c86', display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}

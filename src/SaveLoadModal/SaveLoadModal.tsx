@@ -51,7 +51,7 @@ const renderRow  = (sets: SavedTileSet[], onLoad: (i: number) => void, onSave: (
 export default function SaveLoadModal({ savedSets, open, onSave, onLoad, onClose, currentSet }: SaveLoadModalProps) {
   const [newName, setNewName] = useState<string>('Новый набор')
 
-  return (<Modal sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-around' }} open={open} onClose={onClose} onBackdropClick={onClose}>
+  return (<Modal sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-around' }} open={open} onClose={onClose}>
     <Paper sx={{ width: 650, height: 800, alignSelf: 'center', backgroundColor: '#488DAC', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
       <Box
         sx={{ width: '100%', height: 600, maxWidth: 650, bgcolor: '#5f6c86' }}
